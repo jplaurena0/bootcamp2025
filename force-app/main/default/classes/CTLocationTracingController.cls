@@ -35,15 +35,15 @@ public class CTLocationTracingController {
         Map<Id, Set<Id>> mapOfExistingRecords = new Map<Id, Set<Id>>();
 
         List<Location_Tracing__c> existingRecords = [SELECT Id, Person__c, Location__c FROM Location_Tracing__c 
-        WHERE Location__c IN :locationids
-        AND Person__c IN :personIds];
+                                                        WHERE Location__c IN :locationids
+                                                        AND Person__c IN :personIds];
 
         List<Location_Tracing__c> duplicates = new List<Location_Tracing__c>();
 
         if (existingRecords != null && existingRecords.size() > 0 ){
             for(Location_Tracing__c trace: existingRecords){
-                if(!mapOfExistingRecords.contains(trace.Location__c)){
-                    mapOfExistingRecords.put(trace.Location__c);
+                if(!mapOfExistingRecords.containsKey(trace.Location__c)){
+                    mapOfExistingRecords.put(trace.Location__c, new Set<Id>());
                 }
                 mapOfExistingRecords.get(trace.Location__c).add(trace.Person__c);
             }
@@ -54,5 +54,7 @@ public class CTLocationTracingController {
                 }
             }
         }
+    return duplicates;
     }       
+
  }
