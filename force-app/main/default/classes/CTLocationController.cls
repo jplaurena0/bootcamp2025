@@ -22,4 +22,12 @@ public class CTLocationController {
         }
         return null;
     }
+
+    public static Map<String, Integer> getStatusCount(){
+        Map<String, Integer> healthCountMap = new Map<String, Integer>();
+        for(Aggregate ar: [SELECT Status__c, COUNT(Id) total FROM Location__c GROUP BY Status__c]){
+            healthCountMap.put(String.valueOf(ar.get('Status__c')), Integer.valueOf(ar.get('total')));
+    } 
+        return healthCountMap;
+    }
 }
