@@ -1,15 +1,42 @@
-trigger LeadTrigger on Lead (before insert, before update) {
-    System.debug('Lead trigger called');
+trigger LeadTrigger on Lead (before insert, after insert, before update, after update) {
+    System.debug('Triggersize: ' + Trigger.size);
+    System.debug('isExecuting: ' + Trigger.isExecuting);
+    System.debug('Operation type: ' + Trigger.operationType);
     
-    for(Lead leadRecord : Trigger.new){
-        if(String.isBlank(leadRecord.LeadSource)){
-            leadRecord.LeadSource = 'Other';
+
+    switch on Trigger.operationType {
+        when BEFORE_INSERT {
+            for(Lead leadRecord : Trigger.new){
+                if(String.isBlank(leadRecord.LeadSource)){
+                    leadRecord.LeadSource = 'Other';
+                }
+    
+                if(String.isBlank(leadRecord.Industry)){
+                    leadRecord.addError('The industry field cannot be blank');
+                }
+            }
         }
-    
-        if(String.isBlank(leadRecord.Industry) && Trigger.isInsert){
-            leadRecord.addError('The industry field cannot be blank');
+
+        when AFTER_INSERT {
+            List<Task> leadTasks = new List<Task>();
+            for(Lead leadRecord : Trigger.new){
+                Task leadTask = new Task(Subject = 'Follow up on Lead Status', WhoId = leadRecord.Id);
+                leadTask.Status = 'Not Started';
+                leadTask.Priority = 'Normal';
+                leadTasks.add(leadTask);
+            }
+            insert leadTasks;
         }
-    
-    }
-    System.debug('Lead Trigger 1 is executing');
+
+        when BEFORE_UPDATE {
+            for(Lead leadRecord : Trigger.new){
+                if(String.isBlank(leadRecord.LeadSource)){
+                    leadRecord.LeadSource = 'Other';
+                }
+                if((leadRecord.Status == 'Closed - Converted' || leadRecord.Status == 'Closed - Not Converted') && Trigger.oldMap.get(leadRecord.Id).Status == 'Open - Not Contacted'){
+                leadRecord.Status.addError('You cannot close an open lead record');
+                }
+           }
+       }
+    }   
 }
