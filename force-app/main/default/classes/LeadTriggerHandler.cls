@@ -21,9 +21,11 @@ public class LeadTriggerHandler {
                 leadTasks.add(leadTask);
             }
             insert leadTasks;
-
-            /*Lead anotherLead = new Lead (LastName = 'Test Lead Single', Status = 'Open - Not Contacted', Company = 'Individual');
-            insert anotherLead;*/
+            if(LeadTriggerHandler.alreadyExecuted == false){
+                LeadTriggerHandler.alreadyExecuted = true;
+                Lead anotherLead = new Lead (LastName = 'Test Lead Single', Status = 'Open - Not Contacted', Company = 'Individual');
+                insert anotherLead;
+        }
     }
     
     public static void beforeUpdateHandler(List<Lead> newRecords, Map<Id, Lead> oldRecordsMap) {
